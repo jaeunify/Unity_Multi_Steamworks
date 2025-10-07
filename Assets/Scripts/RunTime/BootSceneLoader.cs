@@ -10,6 +10,7 @@ public class BootSceneLoader : MonoBehaviour
 #if UNITY_EDITOR
     const string KeyPrevScene = "SceneBootstrapper_PreviousScene";
     const string KeyIsBooting = "SceneBootstrapper_IsBooting";
+    [SerializeField] string FirstScene = "LobbyScene";
 #endif
 
     async void Start()
@@ -28,5 +29,6 @@ public class BootSceneLoader : MonoBehaviour
             while (!unloadOp.isDone) await Task.Yield();
         }
 #endif
+        await SceneManager.LoadSceneAsync(FirstScene);
     }
 }
