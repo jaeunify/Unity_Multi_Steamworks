@@ -102,7 +102,7 @@ public class SteamLobbyController : MonoBehaviour
         Log($"Found {list.Length} lobbies");
     }
 
-    public async Task JoinLobbyAsync(Lobby lobby)
+    private async Task JoinLobbyAsync(Lobby lobby)
     {
         Log($"Joining lobby: {lobby.Id}");
         var result = await SteamMatchmaking.JoinLobbyAsync(lobby.Id);
@@ -119,6 +119,36 @@ public class SteamLobbyController : MonoBehaviour
         _currentLobby = result.Value;
 
         Log($"Joined lobby: {result.Value.Id} | Members: {result.Value.MemberCount}/{result.Value.MaxMembers}");
+    }
+
+    public async Task JoinLobbyAsync(string lobbyIdString)
+    {
+        if (string.IsNullOrWhiteSpace(lobbyIdString))
+        {
+            LogError("로비 ID가 비어 있습니다.");
+            return;
+        }
+
+        if (!ulong.TryParse(lobbyIdString, out ulong lobbyIdValue))
+        {
+            LogError($"로비 ID가 올바르지 않습니다: {lobbyIdString}");
+            return;
+        }
+
+        SteamId lobbySteamId = lobbyIdValue;
+
+        var result = await SteamMatchmaking.JoinLobbyAsync(lobbySteamId);
+        if (!result.HasValue)
+        {
+            LogError("JoinLobbyAsync 실패 (해당 ID의 로비가 없거나 접근 불가)");
+            return;
+        }
+
+        if (_currentLobby.HasValue)
+            _currentLobby.Value.Leave();
+
+        _currentLobby = result.Value;
+        Log($"Joined lobby: {(ulong)result.Value.Id} | Members: {result.Value.MemberCount}/{result.Value.MaxMembers}");
     }
 
     /// <summary>
